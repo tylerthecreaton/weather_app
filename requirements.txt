@@ -1,0 +1,5 @@
+requests==2.31.0
+python-dotenv==1.0.0
+matplotlib==3.7.1
+folium==0.14.0
+pillow==10.0.0
