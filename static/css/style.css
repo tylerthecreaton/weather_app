@@ -4,27 +4,56 @@ body {
   font-family: "Kanit", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-image: linear-gradient(
+    to bottom right,
+    #e0e7ff,
+    #c7d2fe,
+    #a5b4fc
+  ); /* from-indigo-100 to-indigo-300 */
+  color: #374151; /* text-gray-700 */
 }
 
-/* Custom Scrollbar */
+/* Stacking Context for Search and History */
+section.search-container {
+  position: relative; /* Ensure it creates a stacking context */
+  z-index: 20; /* Higher than search history */
+}
+
+section#searchHistorySection {
+  position: relative; /* Ensure it creates a stacking context */
+  z-index: 10; /* Lower than search container */
+}
+
+/* Custom Scrollbar - Enhanced */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9; /* bg-slate-100 */
+  background: rgba(224, 231, 255, 0.5); /* indigo-100 with opacity */
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8; /* bg-slate-400 */
+  background: #818cf8; /* indigo-400 */
   border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b; /* bg-slate-500 */
+  background: #6366f1; /* indigo-500 */
+}
+
+.search-input {
+  border-radius: 0.5rem; /* rounded-lg */
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03); /* Subtle initial shadow */
+  border: 1px solid #d1d5db; /* border-gray-300 */
 }
 
 .search-input:focus {
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* focus:ring-indigo-500 with opacity */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1); /* Keep ring, add subtle depth */
+  border-color: #6366f1; /* focus:border-indigo-500 */
+  outline: none;
 }
 
 /* Current Weather Card */
@@ -191,6 +220,369 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #a5b4fc #e0e7ff;
 }
+/* Autocomplete Dropdown (Moved from index.html) */
+.autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.awesomplete ul {
+  /* Awesomplete's suggestion list */
+  position: absolute;
+  border: 1px solid rgba(209, 213, 219, 0.7); /* border-gray-300 with opacity */
+  border-top: none;
+  z-index: 100; /* Ensure it's above other elements */
+  top: calc(100% + 4px); /* Slightly more gap */
+  left: 0;
+  right: 0;
+  max-height: 240px; /* Increased max-height */
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.95); /* Slightly transparent white */
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border-radius: 0 0 0.75rem 0.75rem; /* rounded-b-xl */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.07); /* Enhanced shadow */
+}
+
+.awesomplete ul > li {
+  padding: 14px 20px; /* Increased padding */
+  cursor: pointer;
+  background-color: transparent; /* Handled by parent */
+  border-bottom: 1px solid rgba(229, 231, 235, 0.7); /* border-gray-200 with opacity */
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  color: #374151; /* text-gray-700 */
+}
+
+.awesomplete ul > li:last-child {
+  border-bottom: none;
+  border-radius: 0 0 0.65rem 0.65rem; /* Match parent's bottom radius */
+}
+
+.awesomplete ul > li:hover,
+.awesomplete ul > li[aria-selected="true"] {
+  background-color: rgba(238, 242, 255, 0.9); /* indigo-50 with opacity */
+  color: #4338ca; /* indigo-700 */
+}
+
+.awesomplete ul > li[aria-selected="true"] {
+  background-color: rgba(
+    224,
+    231,
+    255,
+    0.95
+  ) !important; /* indigo-100 with opacity */
+  color: #3730a3 !important; /* indigo-800 */
+  font-weight: 500;
+}
+
+.location-name {
+  font-weight: 500; /* font-medium */
+  color: #1f2937; /* text-gray-800 */
+}
+
+.awesomplete ul > li mark {
+  /* Style for matched text in Awesomplete */
+  background-color: #fde68a; /* amber-200 for highlighting */
+  color: #78350f; /* amber-900 */
+  padding: 0.1em 0;
+  border-radius: 0.2em;
+}
+
+.awesomplete ul > li:hover .location-name,
+.awesomplete ul > li[aria-selected="true"] .location-name {
+  color: #3730a3; /* Indigo-800 */
+}
+
+.location-details {
+  font-size: 0.8em;
+  color: #6b7280; /* text-gray-500 */
+  margin-left: 8px;
+}
+
+.awesomplete ul > li:hover .location-details,
+.awesomplete ul > li[aria-selected="true"] .location-details {
+  color: #4f46e5; /* Indigo-600 */
+}
+
+/* General Card Styling - Enhanced */
+.card-base {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.85
+  ); /* Slightly transparent white for a modern feel */
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border-radius: 1rem; /* Increased border-radius: rounded-2xl */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.07); /* Softer, more layered shadow */
+  border: 1px solid rgba(229, 231, 235, 0.6); /* border-gray-200 with opacity */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden; /* Ensures child elements respect border-radius */
+}
+
+.card-base:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px) scale(1.01);
+  border-color: rgba(209, 213, 219, 0.8); /* border-gray-300 with opacity */
+}
+
+/* Apply .card-base style to relevant sections */
+.search-container,
+#searchHistory .bg-white, 
+#currentWeather,
+.forecast-item,
+#forecastSection .bg-white /* For the placeholder */ {
+  /* Inherit from .card-base or apply similar styles */
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border-radius: 1rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+.search-container:hover,
+#searchHistory .bg-white:hover,
+#currentWeather:hover,
+.forecast-item:hover,
+#forecastSection .bg-white:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px) scale(1.01);
+  border-color: rgba(209, 213, 219, 0.8);
+}
+
+/* Specific override for forecast-item if it needs to be less transparent or different bg */
+.forecast-item {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.9
+  ); /* Slightly more opaque for forecast items */
+}
+
+/* Header Enhancement */
+.app-header {
+  padding-bottom: 1rem; /* Add some padding */
+  /* border-bottom: 1px solid #e0e7ff; /* Subtle border: indigo-100 */
+}
+
+.app-title {
+  color: #4338ca; /* text-indigo-700, slightly darker for more contrast */
+}
+
+/* Search Input & Buttons */
+.search-input {
+  border-radius: 0.5rem; /* rounded-lg */
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle initial shadow */
+}
+
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1); /* Keep ring, add subtle depth */
+  border-color: #6366f1; /* focus:border-indigo-500 */
+}
+
+.search-btn,
+.location-btn {
+  border-radius: 0.5rem; /* rounded-lg */
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.15s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-weight: 500; /* font-medium */
+}
+
+.search-btn:hover,
+.location-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.search-btn:active,
+.location-btn:active {
+  transform: translateY(0px) scale(0.99);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-btn {
+  background-color: #4f46e5; /* bg-indigo-600 */
+  color: white;
+}
+.search-btn:hover {
+  background-color: #4338ca; /* hover:bg-indigo-700 */
+}
+
+.location-btn {
+  background-color: #3b82f6; /* bg-blue-500 */
+  color: white;
+}
+.location-btn:hover {
+  background-color: #2563eb; /* hover:bg-blue-600 */
+}
+
+/* Current Weather Details */
+#currentWeather .weather-header {
+  margin-bottom: 2rem; /* Increased spacing */
+}
+
+#currentWeather .location h2 {
+  color: #312e81; /* text-indigo-800 */
+}
+
+#currentWeather .temperature .weather-icon {
+  font-size: 3.5rem; /* Slightly larger icon */
+  color: #f59e0b; /* text-amber-500 */
+}
+
+#currentWeather .temperature .temp-value {
+  font-size: 4rem; /* text-7xl (approx) */
+  color: #312e81; /* text-indigo-800 */
+}
+
+#currentWeather .weather-desc .description {
+  font-size: 1.25rem; /* text-xl */
+  color: #374151; /* text-gray-700 */
+}
+
+#currentWeather .weather-details {
+  gap: 1.25rem; /* Increased gap */
+  padding-top: 2rem; /* Increased padding */
+}
+
+#currentWeather .detail-item {
+  background-color: #f9fafb; /* bg-gray-50 */
+  padding: 1rem; /* Increased padding */
+  border-radius: 0.75rem; /* rounded-xl */
+  border: 1px solid #f3f4f6; /* border-gray-100 */
+  transition: all 0.2s ease-in-out;
+}
+
+#currentWeather .detail-item:hover {
+  background-color: #f3f4f6; /* bg-gray-100 */
+  border-color: #e5e7eb; /* border-gray-200 */
+  transform: scale(1.03);
+}
+
+#currentWeather .detail-item i {
+  color: #4f46e5; /* text-indigo-600 */
+  font-size: 1.375rem; /* text-xl (custom) */
+  transition: transform 0.2s ease;
+}
+
+#currentWeather .detail-item:hover i {
+  transform: scale(1.1);
+}
+
+/* Forecast Card Enhancements */
+.forecast-item .weather-icon {
+  font-size: 2.5rem; /* text-4xl (custom) */
+  color: #f59e0b; /* text-amber-500 */
+  margin: 0.75rem 0;
+}
+
+.forecast-item .temp {
+  font-size: 1.375rem; /* text-xl (custom) */
+  color: #312e81; /* text-indigo-800 */
+}
+
+/* Body Background Gradient */
+body {
+  background-image: linear-gradient(to bottom right, #e0e7ff, #c7d2fe, #a5b4fc);
+  /* from-indigo-100 to-indigo-200 to-indigo-300 (approx) for a richer gradient */
+}
+
+/* Custom scrollbar for forecast timeslots - slight color adjustment */
+.forecast-timeslots-container::-webkit-scrollbar-thumb {
+  background-color: #818cf8; /* Tailwind indigo-400 */
+}
+.forecast-timeslots-container::-webkit-scrollbar-thumb:hover {
+  background-color: #6366f1; /* Tailwind indigo-500 */
+}
+.forecast-timeslots-container::-webkit-scrollbar-track {
+  background-color: #eef2ff; /* Tailwind indigo-50 */
+}
+.forecast-timeslots-container {
+  scrollbar-color: #818cf8 #eef2ff; /* For Firefox: thumb track */
+}
+
+/* Loading Overlay - make it a bit softer */
+#loadingOverlay {
+  background-color: rgba(238, 242, 255, 0.6); /* bg-indigo-50 with opacity */
+  backdrop-filter: blur(4px);
+}
+#loadingOverlay .bg-white {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 0.75rem; /* rounded-xl */
+}
+
+/* Notifications - ensure they stand out but are pleasant */
+#notifications .bg-green-500 {
+  background-color: #22c55e !important;
+} /* Tailwind green-500 */
+#notifications .bg-red-500 {
+  background-color: #ef4444 !important;
+} /* Tailwind red-500 */
+#notifications .bg-blue-500 {
+  background-color: #3b82f6 !important;
+} /* Tailwind blue-500 */
+#notifications .bg-yellow-500 {
+  background-color: #eab308 !important;
+} /* Tailwind yellow-500 */
+
+#notifications > div {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 1rem 1.25rem;
+  color: white;
+  font-weight: 500;
+}
+
+/* Ensure Awesomplete list is above other elements if needed, but z-index is already high */
+.awesomplete > ul {
+  z-index: 100; /* Already high, but confirm */
+}
+
+/* Adjust search history placeholder */
+#searchHistory .bg-white p.text-gray-500 {
+  padding: 1.5rem;
+  border: 2px dashed #cbd5e1; /* border-slate-300 */
+  border-radius: 0.5rem; /* rounded-lg */
+  color: #64748b; /* text-slate-500 */
+}
+
+/* Style for populated search history items (assuming they will be <a> or <button> inside #searchHistory) */
+#searchHistory .history-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc; /* slate-50 */
+  border: 1px solid #e2e8f0; /* slate-200 */
+  border-radius: 0.375rem; /* rounded-md */
+  margin-bottom: 0.5rem;
+  color: #334155; /* slate-700 */
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+#searchHistory .history-item:hover {
+  background-color: #f1f5f9; /* slate-100 */
+  border-color: #cbd5e1; /* slate-300 */
+  color: #1e293b; /* slate-800 */
+  transform: translateX(2px);
+}
+
+#searchHistory .history-item:last-child {
+  margin-bottom: 0;
+}
+.autocomplete-items div:hover {
+  background-color: #f3f4f6;
+}
+
+.autocomplete-active {
+  background-color: #e5e7eb !important;
+}
+
 /* Search History */
 #searchHistory .history-item {
   display: flex;
@@ -214,6 +606,13 @@ body {
 #searchHistory .history-items {
   max-height: 150px; /* Limit height and make scrollable if needed */
   overflow-y: auto;
+}
+
+/* ลด z-index ขององค์ประกอบอื่น ๆ ที่อาจทับ */
+#searchHistorySection,
+button.search-btn,
+button.location-btn {
+  z-index: 100; /* ต่ำกว่าป๊อปอัพ dropdown */
 }
 
 /* Notifications */
@@ -303,4 +702,58 @@ body {
   filter: blur(4px);
   pointer-events: none;
   user-select: none;
+}
+
+/* ทำให้ div wrapper ของ Awesomplete ขยายเต็มความกว้าง */
+section.search-container div.awesomplete {
+  display: block;
+}
+
+/* เพิ่ม z-index สูงสุดให้ dropdown และตรวจสอบ parent */
+section.search-container div.awesomplete > ul {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  z-index: 100000 !important; /* เพิ่ม z-index ให้สูงมากเพื่อให้แน่ใจ */
+  width: 100%; /* ทำให้เต็มความกว้างของ parent (div.awesomplete) */
+  box-sizing: border-box;
+  margin-top: 4px; /* เพิ่มระยะห่างจาก input */
+  border-radius: 0.375rem; /* rounded-md */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+  list-style-type: none;
+  padding: 0;
+  top: 100%; /* เริ่มต้นจากขอบล่างของ input */
+  left: 0;
+}
+
+section.search-container div.awesomplete > ul > li {
+  padding: 0.5rem 0.75rem; /* py-2 px-3 */
+  cursor: pointer;
+  color: #374151; /* text-gray-700 */
+}
+
+section.search-container div.awesomplete > ul > li:hover,
+section.search-container div.awesomplete > ul > li[aria-selected="true"] {
+  background-color: #e0e7ff; /* indigo-100 */
+  color: #3730a3; /* indigo-800 */
+}
+
+/* Ensure the input field container allows the absolute positioned dropdown to show */
+/* You might need to add this class to the parent of cityInput in your HTML */
+.search-input-container {
+  position: relative;
+}
+
+/* ตรวจสอบว่า parent container ไม่บัง dropdown */
+.search-container,
+.autocomplete {
+  position: relative;
+  overflow: visible !important; /* กันการตัดทอน */
+}
+
+/* ตรวจสอบว่า #loadingOverlay และ #notifications ไม่ทับ */
+#loadingOverlay,
+#notifications {
+  z-index: 5000; /* ต่ำกว่าป๊อปอัพ dropdown */
 }

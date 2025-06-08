@@ -1,142 +1,305 @@
 <!DOCTYPE html>
 <html lang="th" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ตรวจสอบสภาพอากาศปัจจุบันและพยากรณ์อากาศ 5 วันล่วงหน้า">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="ตรวจสอบสภาพอากาศปัจจุบันและพยากรณ์อากาศ 5 วันล่วงหน้า"
+    />
     <title>Weather App - ตรวจสอบสภาพอากาศ</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='images/favicon.png') }}"
+    />
 
     <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
 
     <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- Awesomplete CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='awesomplete/awesomplete.css') }}"
+    />
 
     <!-- PWA Support -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#3B82F6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Weather App">
-</head>
-<body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen font-sans text-gray-800">
+    <link
+      rel="manifest"
+      href="{{ url_for('static', filename='manifest.json') }}"
+    />
+    <meta name="theme-color" content="#3B82F6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Weather App" />
+  </head>
+  <body
+    class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen font-sans text-gray-800"
+  >
     <div id="mainContent" class="transition-all duration-300 ease-in-out">
-        <div class="container mx-auto px-4 py-6 md:py-10 max-w-4xl">
-            <!-- Header -->
-            <header class="app-header text-center mb-8 animate__animated animate__fadeInDown">
-                <h1 class="app-title text-4xl font-bold text-indigo-600 mb-2">
-                    <i class="fas fa-cloud-sun-rain mr-2 text-yellow-400"></i>Weather App
-                </h1>
-                <p class="app-description text-lg text-gray-600">ตรวจสอบสภาพอากาศปัจจุบันและพยากรณ์อากาศ 5 วัน</p>
-            </header>
+      <div class="container mx-auto px-4 py-6 md:py-10 max-w-4xl">
+        <!-- Header -->
+        <header
+          class="app-header text-center mb-8 animate__animated animate__fadeInDown"
+        >
+          <h1 class="app-title text-4xl font-bold text-indigo-600 mb-2">
+            <i class="fas fa-cloud-sun-rain mr-2 text-yellow-400"></i>Weather
+            App
+          </h1>
+          <p class="app-description text-lg text-gray-600">
+            ตรวจสอบสภาพอากาศปัจจุบันและพยากรณ์อากาศ 5 วัน
+          </p>
+        </header>
 
-            <!-- Search Section -->
-            <section class="search-container mb-8 p-6 bg-white rounded-xl shadow-lg animate__animated animate__fadeInUp">
-                <form id="searchForm" class="flex flex-col sm:flex-row items-center gap-3">
-                    <input
-                        type="text"
-                        id="cityInput"
-                        name="city"
-                        placeholder="กรอกชื่อเมือง (เช่น London, Tokyo)"
-                        class="search-input flex-grow w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow shadow-sm"
-                        autocomplete="off"
-                        aria-label="กรอกชื่อเมืองที่ต้องการตรวจสอบสภาพอากาศ"
-                        required>
-                    <div class="flex gap-3 w-full sm:w-auto">
-                        <button
-                            type="submit"
-                            class="search-btn w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow hover:shadow-md flex items-center justify-center gap-2"
-                            aria-label="ค้นหาข้อมูลสภาพอากาศ">
-                            <i class="fas fa-search"></i>
-                            <span>ค้นหา</span>
-                        </button>
-                        <button
-                            type="button"
-                            id="locationBtn"
-                            class="location-btn w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg transition-colors shadow hover:shadow-md flex items-center justify-center"
-                            aria-label="ค้นหาตามตำแหน่งปัจจุบัน"
-                            title="ค้นหาตามตำแหน่งปัจจุบัน">
-                            <i class="fas fa-location-arrow"></i>
-                        </button>
-                    </div>
-                </form>
-            </section>
+        <!-- Search Section -->
+        <section
+          class="search-container mb-8 p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl animate__animated animate__fadeInUp max-w-4xl mx-auto"
+        >
+          <form
+            id="searchForm"
+            class="flex flex-col sm:flex-row items-center"
+          >
+            <div class="autocomplete relative w-full sm:flex-1 sm:mr-4">
+              <input
+                type="text"
+                id="cityInput"
+                name="city"
+                placeholder="กรอกชื่อเมือง, จังหวัด, หรือประเทศ (เช่น Bangkok, เชียงใหม่, Japan)"
+                class="search-input w-full px-5 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-300 shadow-sm hover:shadow-md bg-white/80 backdrop-blur-sm text-gray-800 placeholder-gray-400"
+                autocomplete="off"
+                aria-label="กรอกชื่อเมือง จังหวัด หรือประเทศที่ต้องการตรวจสอบสภาพอากาศ"
+                required
+              />
+              <div
+                id="autocompleteList"
+                class="autocomplete-items absolute w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto z-10"
+              ></div>
+            </div>
+            <div class="flex gap-3 w-full sm:w-auto">
+              <button
+                type="submit"
+                class="search-btn w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold px-6 py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                aria-label="ค้นหาข้อมูลสภาพอากาศ"
+              >
+                <i class="fas fa-search"></i>
+                <span>ค้นหา</span>
+              </button>
+              <button
+                type="button"
+                id="locationBtn"
+                class="location-btn w-full sm:w-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-5 py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center transform hover:-translate-y-0.5"
+                aria-label="ค้นหาตามตำแหน่งปัจจุบัน"
+                title="ค้นหาตามตำแหน่งปัจจุบัน"
+              >
+                <i class="fas fa-location-arrow"></i>
+              </button>
+            </div>
+          </form>
+        </section>
 
-            <!-- Search History -->
-            <section id="searchHistorySection" class="mb-8 animate__animated animate__fadeInUp animate__delay-1s">
-                 <div id="searchHistory" class="bg-white p-4 rounded-lg shadow-md">
-                    <p class="text-gray-500 text-sm text-center">ประวัติการค้นหาจะแสดงที่นี่</p>
-                </div>
-            </section>
+        <style>
+          /* Custom styles for autocomplete items */
+          .autocomplete-items {
+            display: none;
+          }
+          .autocomplete-items div {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #333;
+            transition: background-color 0.2s ease;
+          }
+          .autocomplete-items div:hover {
+            background-color: #f1f5f9;
+          }
+          .autocomplete-items div.active {
+            background-color: #e0e7ff;
+            color: #1e40af;
+          }
 
-            <!-- Current Weather Section -->
-            <section id="currentWeather" class="mb-8 p-6 bg-white rounded-xl shadow-lg hidden animate__animated">
-                <!-- ข้อมูลสภาพอากาศปัจจุบันจะถูกเพิ่มโดย JavaScript -->
-            </section>
+          /* Scrollbar styling for autocomplete */
+          .autocomplete-items::-webkit-scrollbar {
+            width: 8px;
+          }
+          .autocomplete-items::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+          }
+          .autocomplete-items::-webkit-scrollbar-thumb {
+            background: #a0aec0;
+            border-radius: 10px;
+          }
+          .autocomplete-items::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+          }
 
-            <!-- Forecast Section -->
-            <section id="forecastSection" class="mb-8 animate__animated">
-                <div id="forecast" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <!-- ข้อมูลพยากรณ์อากาศจะถูกเพิ่มโดย JavaScript -->
-                    <div class="col-span-full text-center py-8 text-gray-500 bg-white rounded-xl shadow-lg">
-                        <i class="fas fa-cloud-sun text-5xl mb-3 opacity-50"></i>
-                        <p>ค้นหาข้อมูลเพื่อดูพยากรณ์อากาศ</p>
-                    </div>
-                </div>
-            </section>
+          /* Responsive adjustments */
+          @media (max-width: 640px) {
+            .search-container {
+              padding: 1rem;
+            }
+            .search-input {
+              padding: 0.75rem 1rem;
+            }
+            .search-btn,
+            .location-btn {
+              padding: 0.75rem 1rem;
+            }
+          }
+        </style>
 
-            <!-- Footer -->
-            <footer class="text-center text-gray-600 text-sm mt-12 pb-6 animate__animated animate__fadeInUp animate__delay-2s">
-                <p>© <span id="currentYear"></span> Weather App - พัฒนาด้วย <i class="fas fa-heart text-red-500 mx-1"></i> โดยใช้ OpenWeatherMap API</p>
-                <p class="mt-2">
-                    <a href="#" class="text-indigo-600 hover:underline" onclick="weatherAppInstance.showNotification('หน้านี้กำลังอยู่ระหว่างการพัฒนา', 'info')">เกี่ยวกับเรา</a> |
-                    <a href="#" class="text-indigo-600 hover:underline" onclick="weatherAppInstance.showNotification('หน้านี้กำลังอยู่ระหว่างการพัฒนา', 'info')">ติดต่อ</a> |
-                    <a href="#" class="text-indigo-600 hover:underline" onclick="weatherAppInstance.showNotification('หน้านี้กำลังอยู่ระหว่างการพัฒนา', 'info')">นโยบายความเป็นส่วนตัว</a>
-                </p>
-            </footer>
-        </div>
+        <!-- Search History -->
+        <section
+          id="searchHistorySection"
+          class="mb-8 animate__animated animate__fadeInUp animate__delay-1s"
+        >
+          <div id="searchHistory" class="bg-white p-4 rounded-lg shadow-md">
+            <p class="text-gray-500 text-sm text-center">
+              ประวัติการค้นหาจะแสดงที่นี่
+            </p>
+          </div>
+        </section>
+
+        <!-- Current Weather Section -->
+        <section
+          id="currentWeather"
+          class="mb-8 p-6 bg-white rounded-xl shadow-lg hidden animate__animated"
+        >
+          <!-- ข้อมูลสภาพอากาศปัจจุบันจะถูกเพิ่มโดย JavaScript -->
+        </section>
+
+        <!-- Forecast Section -->
+        <section id="forecastSection" class="mb-8 animate__animated">
+          <div
+            id="forecast"
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
+          >
+            <!-- ข้อมูลพยากรณ์อากาศจะถูกเพิ่มโดย JavaScript -->
+            <div
+              class="col-span-full text-center py-8 text-gray-500 bg-white rounded-xl shadow-lg"
+            >
+              <i class="fas fa-cloud-sun text-5xl mb-3 opacity-50"></i>
+              <p>ค้นหาข้อมูลเพื่อดูพยากรณ์อากาศ</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer
+          class="text-center text-gray-600 text-sm mt-12 pb-6 animate__animated animate__fadeInUp animate__delay-2s"
+        >
+          <p>
+            © <span id="currentYear"></span> Weather App - พัฒนาด้วย
+            <i class="fas fa-heart text-red-500 mx-1"></i> โดยใช้ OpenWeatherMap
+            API
+          </p>
+          <p class="mt-2">
+            <a
+              href="#"
+              class="text-indigo-600 hover:underline"
+              onclick="weatherAppInstance.showNotification('หน้านี้กำลังอยู่ระหว่างการพัฒนา', 'info')"
+              >เกี่ยวกับเรา</a
+            >
+            |
+            <a
+              href="#"
+              class="text-indigo-600 hover:underline"
+              onclick="weatherAppInstance.showNotification('หน้านี้กำลังอยู่ระหว่างการพัฒนา', 'info')"
+              >ติดต่อ</a
+            >
+            |
+            <a
+              href="#"
+              class="text-indigo-600 hover:underline"
+              onclick="weatherAppInstance.showNotification('หน้านี้กำลังอยู่ระหว่างการพัฒนา', 'info')"
+              >นโยบายความเป็นส่วนตัว</a
+            >
+          </p>
+        </footer>
+      </div>
     </div>
 
     <!-- Loading Indicator -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-        <div class="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
-            <p id="loadingMessage" class="text-gray-700 text-lg">กำลังโหลดข้อมูล...</p>
-        </div>
+    <div
+      id="loadingOverlay"
+      class="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center">
+        <div
+          class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mb-4"
+        ></div>
+        <p id="loadingMessage" class="text-gray-700 text-lg">
+          กำลังโหลดข้อมูล...
+        </p>
+      </div>
     </div>
 
     <!-- Notifications Container -->
-    <div id="notifications" class="fixed top-5 right-5 z-[1000] w-full max-w-xs space-y-3">
-        <!-- การแจ้งเตือนจะถูกเพิ่มที่นี่ -->
+    <div
+      id="notifications"
+      class="fixed top-5 right-5 z-[1000] w-full max-w-xs space-y-3"
+    >
+      <!-- การแจ้งเตือนจะถูกเพิ่มที่นี่ -->
     </div>
 
-    <!-- JavaScript -->
-    <script src="{{ url_for('static', filename='js/weather-app.js') }}" defer></script>
+    <!-- Awesomplete JS (ต้องมาก่อน weather-app.js) -->
+    <script src="{{ url_for('static', filename='awesomplete/awesomplete.min.js') }}"></script>
+
+    <!-- Weather App JavaScript -->
+    <script
+      src="{{ url_for('static', filename='js/weather-app.js') }}"
+      defer
+    ></script>
+
+    <!-- Location Autocomplete Script (จะถูกลบ) -->
+    <!-- Location Autocomplete Script (จะถูกลบ) - โค้ดส่วนนี้ถูกย้ายไปจัดการโดย Awesomplete และ weather-app.js แล้ว -->
 
     <!-- PWA Service Worker -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('{{ url_for("static", filename="js/sw.js") }}')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register('{{ url_for("static", filename="js/sw.js") }}')
+            .then((registration) => {
+              console.log(
+                "ServiceWorker registration successful with scope: ",
+                registration.scope
+              );
+            })
+            .catch((err) => {
+              console.log("ServiceWorker registration failed: ", err);
             });
-        }
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        });
+      }
+      document.getElementById("currentYear").textContent =
+        new Date().getFullYear();
     </script>
-</body>
+  </body>
 </html>

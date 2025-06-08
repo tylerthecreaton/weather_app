@@ -5,6 +5,8 @@ class WeatherApp {
         this.isLoading = false;
         this.notificationTimeout = null;
         this.searchHistory = [];
+        this.selectedLocationFromAutocomplete = null; // เพิ่ม property นี้
+        this.cityInput = null; // เพิ่ม property สำหรับ input element
         this.MAX_HISTORY_ITEMS = 5;
         this.LOADING_TIMEOUT = 15000; // 15 วินาที
 
@@ -53,6 +55,97 @@ class WeatherApp {
         // Initial call to update UI, maybe with a default city or last search
         // For now, it will show the placeholder for forecast
         this.updateForecast([]); 
+
+        // Initialize Awesomplete
+        this.cityInput = document.getElementById('cityInput');
+        if (this.cityInput) {
+            this.awesomplete = new Awesomplete(this.cityInput, {
+                minChars: 2, // User must type at least 2 characters
+                maxItems: 10,
+                autoFirst: true, // Automatically select the first item
+                list: [], // Will be populated dynamically
+                // Awesomplete's default filter is fine for simple text matching
+                // item: function(text, input) { return Awesomplete.ITEM(text, input); },
+                // replace: function(suggestion) { this.input.value = suggestion.value.Name; }
+                // We will handle item and replace via data and selectcomplete
+                data: function (item /*, input*/) {
+                    // How the item is represented in the suggestion list (HTML is allowed)
+                    return { label: item.name, value: item }; // item is the full object from API
+                },
+                item: function (text, input) {
+                    // How the item is displayed in the list. `text` is `item.label` from `data` function.
+                    // `input` is the current value of the input field.
+                    return Awesomplete.ITEM(text, input.match(/[^,]*$/)[0]);
+                },
+                replace: function (suggestion) {
+                    // When a suggestion is selected, what should fill the input field.
+                    // `suggestion` is `item.value` from `data` function.
+                    this.input.value = suggestion.value.name; 
+                }
+            });
+
+            // Listen for input on cityInput to fetch suggestions
+            let debounceTimer;
+            this.cityInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                const query = this.cityInput.value.trim();
+
+                if (this.selectedLocationFromAutocomplete && 
+                    (query === this.selectedLocationFromAutocomplete.name || 
+                     (this.selectedLocationFromAutocomplete.nameEn && query === this.selectedLocationFromAutocomplete.nameEn))) {
+                    // User has not typed anything new after a selection, or input matches current selection
+                    // Potentially, user might be deleting characters from a selected item. 
+                    // If query becomes too short, or different, then clear selection.
+                    if (query.length < this.awesomplete.minChars) {
+                        this.selectedLocationFromAutocomplete = null;
+                        this.awesomplete.list = [];
+                    }
+                    return; // Don't re-fetch if input still matches a valid selection
+                }
+                
+                // If user types and it no longer matches the selected location, clear the selection
+                if (this.selectedLocationFromAutocomplete) {
+                    this.selectedLocationFromAutocomplete = null;
+                    console.log('Input changed after selection, cleared selectedLocationFromAutocomplete');
+                }
+
+                if (query.length < this.awesomplete.minChars) {
+                    this.awesomplete.list = []; // Clear suggestions if query is too short
+                    return;
+                }
+
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        console.log(`Fetching suggestions for: "${query}"`);
+                        // Use the Go API endpoint
+                        const response = await fetch(`http://localhost:8082/api/search-locations?query=${encodeURIComponent(query)}`);
+                        if (!response.ok) {
+                            const errorData = await response.text();
+                            throw new Error(`Network response was not ok for suggestions: ${response.status} ${errorData}`);
+                        }
+                        const suggestions = await response.json();
+                        console.log('Received suggestions:', suggestions);
+                        this.awesomplete.list = suggestions; // Awesomplete will use its 'data' function to process this array
+                        this.awesomplete.evaluate(); // Force Awesomplete to re-evaluate and show dropdown
+                    } catch (error) {
+                        console.error('Error fetching location suggestions:', error);
+                        this.awesomplete.list = [];
+                    }
+                }, 300); // Debounce for 300ms
+            });
+
+            // Handle selection from Awesomplete dropdown
+            this.cityInput.addEventListener('awesomplete-selectcomplete', (event) => {
+                // event.text is the result of the `data` function, so event.text.value is our location object
+                this.selectedLocationFromAutocomplete = event.text.value; 
+                // The 'replace' function already set this.cityInput.value
+                // this.cityInput.value = event.text.value.Name; 
+                console.log('awesomplete-selectcomplete: Selected object:', JSON.stringify(this.selectedLocationFromAutocomplete, null, 2));
+                console.log('awesomplete-selectcomplete: cityInput.value is:', this.cityInput.value);
+                // Optionally, trigger search immediately after selection
+                // this.handleSearch(new Event('submit')); // Or a more direct call if handleSearch is refactored
+            });
+        }
     }
 
     async searchByLocation() {
@@ -127,32 +220,64 @@ class WeatherApp {
         }
     }
 
-    async searchWeather(city) {
+    async searchWeather(locationForAPI, locationForDisplayAndHistory) {
         if (this.isLoading) return;
         try {
             this.isLoading = true;
-            this.setLoadingState(true, `กำลังค้นหาข้อมูลสำหรับ ${city}...`);
-            const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+            const displayLocation = locationForDisplayAndHistory || locationForAPI;
+            // Ensure displayLocation is a string, could be an object if something went wrong
+            const displayLocationStr = (typeof displayLocation === 'string') ? displayLocation : locationForAPI;
+            this.setLoadingState(true, `กำลังค้นหาข้อมูลสำหรับ ${displayLocationStr}...`);
+            
+            // locationForAPI is expected to be more specific (e.g., province name) if from autocomplete
+            // If it's manual input, it might be "District, Province" or just "Province"
+            // The backend /api/weather should ideally handle this, but we try to send the most relevant part.
+            let queryCity = locationForAPI;
+            if (locationForAPI.includes(',')) {
+                 // If it's a combined string like "District, Province", prefer the part after comma (Province)
+                 // or the first part if OpenWeatherMap is more likely to know the district.
+                 // For now, let's send the whole string if it's not from autocomplete's AdminArea1.
+                 // If it *is* AdminArea1, it should be just the province name.
+                 // This logic might need refinement based on OpenWeatherMap's capabilities.
+                const parts = locationForAPI.split(',').map(s => s.trim());
+                queryCity = parts[parts.length - 1]; // Default to last part (province)
+            }
+
+            console.log(`Fetching weather for API query: ${queryCity}, Original input for API: ${locationForAPI}`);
+            
+            const response = await fetch(`/api/weather?city=${encodeURIComponent(queryCity)}`);
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `เกิดข้อผิดพลาด HTTP ${response.status}`);
             }
+            
             const data = await response.json();
             if (data.error) throw new Error(data.error);
-            if (!data || !data.main) throw new Error('ไม่พบข้อมูลสภาพอากาศสำหรับเมืองนี้');
+            if (!data || !data.main) throw new Error('ไม่พบข้อมูลสภาพอากาศสำหรับสถานที่นี้');
 
             this.currentWeather = data;
             this.forecastData = data.forecast || [];
-            document.getElementById('currentWeather').classList.remove('hidden');
-            document.getElementById('currentWeather').classList.add('animate__fadeIn');
+            
+            const weatherContainer = document.getElementById('currentWeather');
+            if (weatherContainer) {
+                weatherContainer.classList.remove('hidden');
+                weatherContainer.classList.add('animate__fadeIn');
+            }
+            
             await this.updateCurrentWeather();
             await this.updateForecast(this.forecastData);
-            this.addToSearchHistory(city);
+            
+            // บันทึก location ที่ใช้ค้นหา (อาจเป็นจังหวัด) หรือ data.name ที่ได้จาก API
+            this.addToSearchHistory(data.name || displayLocationStr); 
             this.showNotification(`โหลดข้อมูลสภาพอากาศสำหรับ ${data.name} เรียบร้อยแล้ว`, 'success');
         } catch (error) {
+            console.error('Error in searchWeather:', error);
             this.showError(error.message || 'ไม่สามารถโหลดข้อมูลสภาพอากาศได้');
-            document.getElementById('currentWeather').classList.add('hidden');
-            this.updateForecast([]); // Clear forecast on error
+            const weatherContainer = document.getElementById('currentWeather');
+            if (weatherContainer) {
+                weatherContainer.classList.add('hidden');
+            }
+            this.updateForecast([]); // เคลียร์ข้อมูลพยากรณ์เมื่อเกิดข้อผิดพลาด
         } finally {
             this.isLoading = false;
             this.setLoadingState(false);
@@ -474,14 +599,65 @@ class WeatherApp {
 
     async handleSearch(event) {
         event.preventDefault();
-        const cityInput = document.getElementById('cityInput');
-        const city = cityInput.value.trim();
-        if (city) {
-            await this.searchWeather(city);
-            // cityInput.value = ''; // Optional: clear input after search
-        } else {
-            this.showNotification('กรุณาป้อนชื่อเมือง', 'warning');
+        console.log('handleSearch: Entered.');
+        if (!this.cityInput) {
+            console.error('handleSearch: this.cityInput is not initialized!');
+            this.showNotification('เกิดข้อผิดพลาด: ไม่สามารถเข้าถึงช่องค้นหาได้', 'error');
+            return;
         }
+        console.log('handleSearch: Initial this.cityInput.value:', this.cityInput.value);
+        console.log('handleSearch: Initial this.selectedLocationFromAutocomplete:', JSON.stringify(this.selectedLocationFromAutocomplete, null, 2));
+
+        const cityValueFromInput = this.cityInput.value.trim();
+        let cityToSearchAPI;
+        let locationForDisplayAndHistory = cityValueFromInput;
+
+        // Debugging the condition components
+        const isAutocompleteSelected = !!this.selectedLocationFromAutocomplete;
+        const isInputValueMatchingName = isAutocompleteSelected && this.cityInput.value === this.selectedLocationFromAutocomplete.Name;
+        const isInputValueMatchingNameEN = isAutocompleteSelected && this.selectedLocationFromAutocomplete.NameEN && this.cityInput.value === this.selectedLocationFromAutocomplete.NameEN;
+
+        console.log(`handleSearch: isAutocompleteSelected: ${isAutocompleteSelected}`);
+        if(isAutocompleteSelected) {
+            console.log(`handleSearch: this.cityInput.value: '${this.cityInput.value}'`);
+            console.log(`handleSearch: selectedLocation.Name: '${this.selectedLocationFromAutocomplete.Name}'`);
+            console.log(`handleSearch: selectedLocation.NameEN: '${this.selectedLocationFromAutocomplete.NameEN}'`);
+            console.log(`handleSearch: isInputValueMatchingName: ${isInputValueMatchingName}`);
+            console.log(`handleSearch: isInputValueMatchingNameEN: ${isInputValueMatchingNameEN}`);
+        }
+
+        if (this.selectedLocationFromAutocomplete && 
+            (this.cityInput.value === this.selectedLocationFromAutocomplete.Name || 
+             (this.selectedLocationFromAutocomplete.NameEN && this.cityInput.value === this.selectedLocationFromAutocomplete.NameEN) )) {
+            // User selected from autocomplete and hasn't changed it
+            // Prefer AdminArea1EN (English province name) for the weather API query if available
+            cityToSearchAPI = this.selectedLocationFromAutocomplete.AdminArea1EN || 
+                              this.selectedLocationFromAutocomplete.AdminArea1 || 
+                              this.selectedLocationFromAutocomplete.NameEN || 
+                              this.selectedLocationFromAutocomplete.Name;
+                              
+            locationForDisplayAndHistory = this.selectedLocationFromAutocomplete.Name; // Full Thai name for display
+            console.log(`Search: Autocomplete selected. API Query: '${cityToSearchAPI}', Display: '${locationForDisplayAndHistory}'`);
+        } else {
+            // User typed manually or edited after selection
+            // User typed manually or edited after selection
+            cityToSearchAPI = cityValueFromInput; // Use the raw input for the API
+            locationForDisplayAndHistory = cityValueFromInput; // Also use raw input for display
+            console.log(`Search: Manual input. API Query: '${cityToSearchAPI}', Display: '${locationForDisplayAndHistory}'`);
+            this.selectedLocationFromAutocomplete = null; // Clear selection if input was changed or typed manually
+        }
+
+        if (cityToSearchAPI) {
+            await this.searchWeather(cityToSearchAPI, locationForDisplayAndHistory);
+        } else {
+            // Only show notification if the input was genuinely empty and not cleared by other logic
+            if (!cityValueFromInput) { 
+                this.showNotification('กรุณาป้อนชื่อเมือง', 'warning');
+            }
+        }
+        // It's generally good practice to clear selection after a search attempt is fully processed.
+        // If selectedLocationFromAutocomplete was already nulled in the 'else' block, this is fine.
+        this.selectedLocationFromAutocomplete = null; 
     }
 
     addToSearchHistory(city) {
